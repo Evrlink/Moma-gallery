@@ -104,4 +104,4 @@ export default function Gallery() {
       </div>
     </div>
   )
-}
+}// deploy trigger
