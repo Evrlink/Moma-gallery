@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import { Metadata } from 'next'
 import Gallery from './gallery'
 
 export const metadata: Metadata = {
@@ -7,6 +7,6 @@ export const metadata: Metadata = {
   },
 }
 
-export default function Page() {
+export default function Home() {
   return <Gallery />
 }
