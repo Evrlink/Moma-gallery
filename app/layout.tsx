@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "MoMA Gallery",
   description: "Explore MoMA's art collection on Base",
   other: {
-    "base:app_id": "69f1764f31e06432df038312",
+    "base:app_id": "69f185d25db18b50b3cf003a",
   },
 };
 
