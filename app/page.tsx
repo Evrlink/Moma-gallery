@@ -10,7 +10,7 @@ export default function Gallery() {
   const [items, setItems] = useState<any[]>([])
   const [gridHeight, setGridHeight] = useState(0)
   const [viewers, setViewers] = useState(9)
-  const [selected, setSelected] = useState(null)
+  const [selected, setSelected] = useState<any>(null)
   const [description, setDescription] = useState('')
   const [descLoading, setDescLoading] = useState(false)
 
