@@ -15,6 +15,9 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "MoMA Gallery",
   description: "Explore MoMA's art collection on Base",
+  other: {
+    "base:app_id": "69f1764f31e06432df038312",
+  },
 };
 
 export default function RootLayout({
@@ -27,9 +30,6 @@ export default function RootLayout({
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <head>
-        <meta name="base:app_id" content="69f1764f31e06432df038312" />
-      </head>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
