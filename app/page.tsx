@@ -101,8 +101,8 @@ export default function Gallery() {
   return (
     <div style={{ background: '#fff', minHeight: '100vh', fontFamily: 'Inter, system-ui, sans-serif' }}>
       <Nav />
-      <div style={{ paddingTop: '3.25rem' }}>
-        <p style={{ padding: '12px 50px 8px', fontSize: 13, color: '#999', fontStyle: 'italic' }}>Come for a stroll through the garden of human creativity...</p>
+      <div style={{ paddingTop: '3.25rem' }}><div style={{ padding: '24px 50px 16px' }}><h1 style={{ fontSize: 28, fontWeight: 700, color: '#1a1a1a', margin: '0 0 4px 0', letterSpacing: '-0.5px' }}>MoMA</h1><p style={{ fontSize: 14, color: '#999', margin: 0 }}>Explore MoMA art in the Base app</p></div>
+        <p style={{ padding: '12px 50px 8px', fontSize: 13, color: '#999', fontStyle: 'italic' }}></p>
         <div style={{ position: 'relative', height: gridHeight }}>
           {items.map(item => (
             <div key={item.id} onClick={() => openArtwork(item)} style={{ position: 'absolute', left: item.x, top: item.y, width: COL_WIDTH, overflow: 'hidden', cursor: 'pointer' }}>
