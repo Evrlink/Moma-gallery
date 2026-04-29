@@ -22,7 +22,7 @@ export default function Gallery() {
   useEffect(() => {
     fetch('/api/random?count=20').then(r => r.json()).then(async (artworks) => {
       const colHeights = Array(COLS).fill(PAD)
-      const loaded = await Promise.all(artworks.map(a => new Promise(resolve => {
+      const loaded = await Promise.all(artworks.map((a: any) => new Promise(resolve => {
         const img = new window.Image()
         img.onload = () => resolve({ ...a, x: 0, y: 0, h: (COL_WIDTH / img.naturalWidth) * img.naturalHeight })
         img.onerror = () => resolve({ ...a, x: 0, y: 0, h: COL_WIDTH })
