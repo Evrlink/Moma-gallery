@@ -58,11 +58,9 @@ export default function Gallery() {
   const Nav = () => (
     <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 500, display: 'flex', alignItems: 'center', height: '3.25rem', padding: '0 30px', gap: '24px', backdropFilter: 'blur(12px)', background: 'rgba(255,255,255,0.75)', borderBottom: '0.5px solid #ebebeb' }}>
       <span style={{ fontSize: 13, color: '#1a1a1a' }}>gallery</span>
-      <span style={{ fontSize: 13, color: '#999' }}>uncovered</span>
-      <span style={{ fontSize: 13, color: '#999' }}>curate together</span>
-      <div style={{ marginLeft: 'auto', fontSize: 12, color: '#999', display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}/>{viewers} people viewing
-      </div>
+      
+      
+      
     </nav>
   )
 
@@ -84,15 +82,8 @@ export default function Gallery() {
           <p style={{ fontSize: '0.75rem', color: '#999', margin: '0.75rem 0 1.5rem 0' }}>
             Source: <a href={'https://www.moma.org/collection/works/' + selected.id} target="_blank" style={{ color: '#666', textDecoration: 'none', borderBottom: '1px solid #ddd' }}>MoMA Collection</a>
           </p>
-          <div style={{ display: 'flex', gap: 8, marginBottom: '0.75rem' }}>
-            <button style={{ border: '1px solid #ddd', background: 'none', borderRadius: 20, padding: '6px 16px', fontSize: 13, cursor: 'pointer', color: '#333' }}>Send as postcard</button>
-            <button style={{ border: '1px solid #ddd', background: 'none', borderRadius: 20, padding: '6px 16px', fontSize: 13, cursor: 'pointer', color: '#333' }}>Share</button>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#22c55e', display: 'inline-block' }}/>
-            <span style={{ fontSize: 12, color: '#999' }}>1 person viewing this</span>
-            <button style={{ border: '1px solid #ddd', background: 'none', borderRadius: 20, padding: '4px 12px', fontSize: 12, cursor: 'pointer', color: '#333' }}>Talk to them</button>
-          </div>
+          
+          
         </div>
       </div>
     </div>
