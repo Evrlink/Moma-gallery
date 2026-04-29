@@ -7,7 +7,7 @@ const GAP = 50
 const PAD = 50
 
 export default function Gallery() {
-  const [items, setItems] = useState([])
+  const [items, setItems] = useState<any[]>([])
   const [gridHeight, setGridHeight] = useState(0)
   const [viewers, setViewers] = useState(9)
   const [selected, setSelected] = useState(null)
