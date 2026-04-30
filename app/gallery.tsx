@@ -1,6 +1,7 @@
 // @ts-nocheck
 'use client'
 import { useEffect, useState } from 'react'
+import { ConnectWallet } from '@/components/ConnectWallet'
 
 const DESKTOP = { COLS: 5, COL_WIDTH: 269.8, GAP: 50, PAD: 50 }
 const MOBILE  = { COLS: 2, COL_WIDTH: 160,   GAP: 12, PAD: 16 }
@@ -67,6 +68,7 @@ export default function Gallery() {
   const Nav = () => (
     <nav style={{ position: 'fixed', top: 0, left: 0, right: 0, zIndex: 500, display: 'flex', alignItems: 'center', height: '3.25rem', padding: '0 30px', gap: '24px', backdropFilter: 'blur(12px)', background: 'rgba(255,255,255,0.75)', borderBottom: '0.5px solid #ebebeb' }}>
       <span style={{ fontSize: 13, color: '#1a1a1a' }}>gallery</span>
+      <div style={{ marginLeft: 'auto' }}><ConnectWallet /></div>
     </nav>
   )
 
