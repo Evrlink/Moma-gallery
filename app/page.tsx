@@ -6,7 +6,7 @@ export const revalidate = 0
 
 export const metadata: Metadata = {
   other: {
-    'base:app_id': '69f185d25db18b50b3cf003a',
+    'base:app_id': '69f2a19c6daaf9236cfba3d9',
   },
 }
 
