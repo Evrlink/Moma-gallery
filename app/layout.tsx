@@ -13,16 +13,15 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "MoMA Gallery",
-  description: "Explore MoMA's art collection on Base",
-  other: {
-    "base:app_id": "69f2a19c6daaf9236cfba3d9",
-  },
-};
-
-export const dynamic = "force-dynamic";
-export const revalidate = 0;
+export async function generateMetadata(): Promise<Metadata> {
+  return {
+    title: "MoMA Gallery",
+    description: "Explore MoMA's art collection on Base",
+    other: {
+      "base:app_id": "69f2a19c6daaf9236cfba3d9",
+    },
+  };
+}
 
 export default function RootLayout({
   children,
@@ -30,10 +29,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">
         <Providers>{children}</Providers>
       </body>
