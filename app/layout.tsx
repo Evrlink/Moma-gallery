@@ -13,15 +13,13 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export async function generateMetadata(): Promise<Metadata> {
-  return {
-    title: "MoMA Gallery",
-    description: "Explore MoMA's art collection on Base",
-    other: {
-      "base:app_id": "69f2a19c6daaf9236cfba3d9",
-    },
-  };
-}
+export const metadata: Metadata = {
+  title: "MoMA Gallery",
+  description: "Explore MoMA's art collection on Base",
+  other: {
+    "base:app_id": "69f2a19c6daaf9236cfba3d9",
+  },
+};
 
 export default function RootLayout({
   children,
