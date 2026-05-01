@@ -9,7 +9,6 @@ export const config = createConfig({
     baseAccount({
       appName: 'MoMA Gallery',
       appLogoUrl: 'https://moma-gallery.vercel.app/favicon.ico',
-      preference: 'smartWalletOnly',
     }),
   ],
   storage: createStorage({ storage: cookieStorage }),
