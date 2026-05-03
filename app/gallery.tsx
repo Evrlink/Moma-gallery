@@ -28,38 +28,6 @@ export default function Gallery() {
 
   const { COLS, COL_WIDTH, GAP, PAD } = isMobile ? MOBILE : DESKTOP
 
-  useEffect(() =>
-cat > ~/moma-gallery/app/gallery.tsx << 'EOF'
-// @ts-nocheck
-'use client'
-import { useEffect, useState, useRef, useCallback } from 'react'
-import { ConnectWallet } from '@/components/ConnectWallet'
-
-const DESKTOP = { COLS: 5, COL_WIDTH: 269.8, GAP: 50, PAD: 50 }
-const MOBILE  = { COLS: 2, COL_WIDTH: 160,   GAP: 12, PAD: 16 }
-
-export default function Gallery() {
-  const [items, setItems] = useState<any[]>([])
-  const [gridHeight, setGridHeight] = useState(0)
-  const [viewers, setViewers] = useState(9)
-  const [selected, setSelected] = useState<any>(null)
-  const [description, setDescription] = useState('')
-  const [descLoading, setDescLoading] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const loaderRef = useRef(null)
-  const colHeightsRef = useRef<number[]>([])
-  const loadingRef = useRef(false)
-
-  useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth < 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
-  }, [])
-
-  const { COLS, COL_WIDTH, GAP, PAD } = isMobile ? MOBILE : DESKTOP
-
   useEffect(() => {
     const iv = setInterval(() => setViewers(v => Math.max(4, Math.min(24, v + (Math.random() > 0.5 ? 1 : -1)))), 4000)
     return () => clearInterval(iv)
@@ -79,9 +47,7 @@ export default function Gallery() {
     const heights = colHeightsRef.current
     const positioned = loaded.map(item => {
       const col = heights.indexOf(Math.min(...heights))
-      const x = PAD + col * (COL_WIDTH + GAP)
-      const y = heights[col]
-      heights[col] += item.h + GAP
+      const x = PAD +       const x = PAD +       const x = PAD +       const x =heights[col] += item.h + GAP
       return { ...item, x, y, uid: Math.random() }
     })
     colHeightsRef.current = heights
@@ -132,9 +98,9 @@ export default function Gallery() {
     <div style={{ background: '#fff', height: '100vh', overflow: 'hidden', fontFamily: 'Inter, system-ui, sans-serif', color: '#1a1a1a' }}>
       <Nav />
       <button onClick={closeArtwork} style={{ position: 'fixed', top: '4.5rem', left: 20, zIndex: 100, background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#555', padding: '4px 8px' }}>←</button>
-      {isMobile ? (
+      sMobile ? (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingTop: '3.25rem', overflowY: 'auto' }}>
-          <div style={{ wih: '100%', background: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 16px 16px' }}>
+          <div style={{ width: '100%', background: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 16px 16px' }}>
             <img src={selected.imageUrl} alt={selected.title} style={{ maxWidth: '100%', maxHeight: '60vw', objectFit: 'contain', display: 'block' }} />
           </div>
           <div style={{ padding: '16px 20px 40px' }}>
