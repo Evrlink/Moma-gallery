@@ -27,6 +27,8 @@ export default function Gallery() {
   const itemsRef = useRef<any[]>([])
   const loadingMoreRef = useRef(false)
   const initialLoadDoneRef = useRef(false)
+  const loadMoreRef = useRef<() => void>(() => {})
+  const sentinelRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     itemsRef.current = items
@@ -109,13 +111,38 @@ export default function Gallery() {
   }, [COLS, COL_WIDTH, GAP, PAD, layoutBatch])
 
   useEffect(() => {
+    loadMoreRef.current = loadMore
+  }, [loadMore])
+
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const obs = new IntersectionObserver(
+      entries => {
+        if (!entries[0]?.isIntersecting) return
+        loadMoreRef.current()
+      },
+      { root: null, rootMargin: '320px 0px', threshold: 0 }
+    )
+    obs.observe(el)
+    return () => obs.disconnect()
+  }, [gridHeight, items.length])
+
+  useEffect(() => {
+    const getScrollable = () => document.scrollingElement ?? document.documentElement
+    const nearBottom = () => {
+      const root = getScrollable()
+      const scrollTop = window.scrollY ?? root.scrollTop
+      const viewport = window.innerHeight || root.clientHeight
+      const scrollHeight = Math.max(root.scrollHeight, document.body?.scrollHeight ?? 0)
+      return scrollTop + viewport >= scrollHeight - 320
+    }
     const onScroll = () => {
-      const doc = document.documentElement
-      if (window.scrollY + window.innerHeight >= doc.scrollHeight - 400) loadMore()
+      if (nearBottom()) loadMoreRef.current()
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
-  }, [loadMore])
+  }, [])
 
   const openArtwork = async (artwork) => {
     setSelected(artwork)
@@ -198,6 +225,7 @@ export default function Gallery() {
               <img src={item.imageUrl} alt={item.title} style={{ width: '100%', height: 'auto', display: 'block' }} />
             </div>
           ))}
+          <div ref={sentinelRef} aria-hidden style={{ position: 'absolute', left: 0, bottom: 0, width: '100%', height: 1, pointerEvents: 'none', opacity: 0 }} />
         </div>
       </div>
     </div>
