@@ -19,28 +19,6 @@ export default function Gallery() {
   const loaderRef = useRef(null)
 
   useEffect(() => {
-cat > ~/moma-gallery/app/gallery.tsx << 'EOF'
-// @ts-nocheck
-'use client'
-import { useEffect, useState, useRef, useCallback } from 'react'
-import { ConnectWallet } from '@/components/ConnectWallet'
-
-const DESKTOP = { COLS: 5, COL_WIDTH: 269.8, GAP: 50, PAD: 50 }
-const MOBILE  = { COLS: 2, COL_WIDTH: 160,   GAP: 12, PAD: 16 }
-
-export default function Gallery() {
-  const [items, setItems] = useState<any[]>([])
-  const [colHeights, setColHeights] = useState<number[]>([])
-  const [gridHeight, setGridHeight] = useState(0)
-  const [viewers, setViewers] = useState(9)
-  const [selected, setSelected] = useState<any>(null)
-  const [description, setDescription] = useState('')
-  const [descLoading, setDescLoading] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const loaderRef = useRef(null)
-
-  useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
     check()
     window.addEventListener('resize', check)
@@ -78,7 +56,6 @@ export default function Gallery() {
     setLoadingMore(false)
   }, [COLS, COL_WIDTH, GAP, PAD, loadingMore])
 
-  // Initial load
   useEffect(() => {
     setItems([])
     const heights = Array(COLS).fill(PAD)
@@ -104,7 +81,6 @@ export default function Gallery() {
     })
   }, [COLS, COL_WIDTH, GAP, PAD])
 
-  // Infinite scroll observer
   useEffect(() => {
     const observer = new IntersectionObserver(entries => {
       if (entries[0].isIntersecting && colHeights.length > 0) {
@@ -142,7 +118,7 @@ export default function Gallery() {
       <Nav />
       <button onClick={closeArtwork} style={{ position: 'fixed', top: '4.5rem', left: 20, zIndex: 100, background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#555', padding: '4px 8px' }}>←</button>
       {isMobile ? (
-        <div style={{ display: 'flex', flexDirection: 'column', ight: '100vh', paddingTop: '3.25rem', overflowY: 'auto' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingTop: '3.25rem', overflowY: 'auto' }}>
           <div style={{ width: '100%', background: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 16px 16px' }}>
             <img src={selected.imageUrl} alt={selected.title} style={{ maxWidth: '100%', maxHeight: '60vw', objectFit: 'contain', display: 'block' }} />
           </div>
