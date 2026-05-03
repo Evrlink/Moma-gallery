@@ -1,6 +1,6 @@
 // @ts-nocheck
 'use client'
-import { useEffect, useState, useRef, useCallback } from 'react'
+import { useEffect, useState } from 'react'
 import { ConnectWallet } from '@/components/ConnectWallet'
 
 const DESKTOP = { COLS: 5, COL_WIDTH: 269.8, GAP: 50, PAD: 50 }
@@ -14,10 +14,6 @@ export default function Gallery() {
   const [description, setDescription] = useState('')
   const [descLoading, setDescLoading] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
-  const [loadingMore, setLoadingMore] = useState(false)
-  const loaderRef = useRef(null)
-  const colHeightsRef = useRef<number[]>([])
-  const loadingRef = useRef(false)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -33,44 +29,26 @@ export default function Gallery() {
     return () => clearInterval(iv)
   }, [])
 
-  const positionArtworks = useCallback(async () => {
-    if (loadingRef.current) return
-    loadingRef.current = true
-    setLoadingMore(true)
-    const artworks = await fetch('/api/random?count=20').then(r => r.json())
-    const loaded = await Promise.all(artworks.map((a: any) => new Promise(resolve => {
-      const img = new window.Image()
-      img.onload = () => resolve({ ...a, h: (COL_WIDTH / img.naturalWidth) * img.naturalHeight })
-      img.onerror = () => resolve({ ...a, h: COL_WIDTH })
-      img.src = a.imageUrl
-    })))
-    const heights = colHeightsRef.current
-    const positioned = loaded.map(item => {
-      const col = heights.indexOf(Math.min(...heights))
-      const x = PAD +       const x = PAD +       const x = PAD +       const x =heights[col] += item.h + GAP
-      return { ...item, x, y, uid: Math.random() }
+  useEffect(() => {
+    fetch('/api/random?count=20').then(r => r.json()).then(async (artworks) => {
+      const colHeights = Array(COLS).fill(PAD)
+      const loaded = await Promise.all(artworks.map((a: any) => new Promise(resolve => {
+        const img = new window.Image()
+        img.onload = () => resolve({ ...a, x: 0, y: 0, h: (COL_WIDTH / img.naturalWidth) * img.naturalHeight })
+        img.onerror = () => resolve({ ...a, x: 0, y: 0, h: COL_WIDTH })
+        img.src = a.imageUrl
+      })))
+      const positioned = loaded.map(item => {
+        const col = colHeights.indexOf(Math.min(...colHeights))
+        const x = PAD + col * (COL_WIDTH + GAP)
+        const y = colHeights[col]
+        colHeights[col] += item.h + GAP
+        return { ...item, x, y }
+      })
+      setItems(positioned)
+      setGridHeight(Math.max(...colHeights) + PAD)
     })
-    colHeightsRef.current = heights
-    setGridHeight(Math.max(...heights) + PAD)
-    setItems(prev => [...prev, ...positioned])
-    loadingRef.current = false
-    setLoadingMore(false)
   }, [COLS, COL_WIDTH, GAP, PAD])
-
-  useEffect(() => {
-    setItems([])
-    colHeightsRef.current = Array(COLS).fill(PAD)
-    setGridHeight(0)
-    positionArtworks()
-  }, [COLS, COL_WIDTH, GAP, PAD])
-
-  useEffect(() => {
-    const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting) positionArtworks()
-    }, { threshold: 0.1 })
-    if (loaderRef.current) observer.observe(loaderRef.current)
-    return () => observer.disconnect()
-  }, [positionArtworks])
 
   const openArtwork = async (artwork) => {
     setSelected(artwork)
@@ -98,7 +76,9 @@ export default function Gallery() {
     <div style={{ background: '#fff', height: '100vh', overflow: 'hidden', fontFamily: 'Inter, system-ui, sans-serif', color: '#1a1a1a' }}>
       <Nav />
       <button onClick={closeArtwork} style={{ position: 'fixed', top: '4.5rem', left: 20, zIndex: 100, background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#555', padding: '4px 8px' }}>←</button>
-      sMobile ? (
+
+      {/* MOBILE detail view: stacked */}
+      {isMobile ? (
         <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingTop: '3.25rem', overflowY: 'auto' }}>
           <div style={{ width: '100%', background: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 16px 16px' }}>
             <img src={selected.imageUrl} alt={selected.title} style={{ maxWidth: '100%', maxHeight: '60vw', objectFit: 'contain', display: 'block' }} />
@@ -116,6 +96,7 @@ export default function Gallery() {
           </div>
         </div>
       ) : (
+        /* DESKTOP detail view: unchanged */
         <div style={{ display: 'flex', height: '100vh', paddingTop: '3.25rem' }}>
           <div style={{ flex: '0 0 60%', display: 'flex', justifyContent: 'center', alignItems: 'center', background: '#fff', overflow: 'hidden' }}>
             <img src={selected.imageUrl} alt={selected.title} style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain', display: 'block' }} />
@@ -146,13 +127,10 @@ export default function Gallery() {
         </div>
         <div style={{ position: 'relative', height: gridHeight }}>
           {items.map(item => (
-            <div key={item.uid} onClick={() => openArtwork(item)} style={{ position: 'absolute', left: item.x, top: item.y, width: COL_WIDTH, overflow: 'hidden', cursor: 'pointer' }}>
+            <div key={item.id} onClick={() => openArtwork(item)} style={{ position: 'absolute', left: item.x, top: item.y, width: COL_WIDTH, overflow: 'hidden', cursor: 'pointer' }}>
               <img src={item.imageUrl} alt={item.title} style={{ width: '100%', height: 'auto', display: 'block' }} />
             </div>
           ))}
-        </div>
-        <div ref={loaderRef} style={{ height: 60, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          {loadingMore && <span style={{ fontSize: 12, color: '#999' }}>Loading...</span>}
         </div>
       </div>
     </div>
