@@ -1,10 +1,20 @@
 // @ts-nocheck
 'use client'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef, useCallback } from 'react'
 import { ConnectWallet } from '@/components/ConnectWallet'
 
 const DESKTOP = { COLS: 5, COL_WIDTH: 269.8, GAP: 50, PAD: 50 }
 const MOBILE  = { COLS: 2, COL_WIDTH: 160,   GAP: 12, PAD: 16 }
+
+function computeColHeightsFromItems(items, COLS, COL_WIDTH, GAP, PAD) {
+  const colHeights = Array(COLS).fill(PAD)
+  for (const item of items) {
+    const col = Math.round((item.x - PAD) / (COL_WIDTH + GAP))
+    if (col >= 0 && col < COLS)
+      colHeights[col] = Math.max(colHeights[col], item.y + item.h + GAP)
+  }
+  return colHeights
+}
 
 export default function Gallery() {
   const [items, setItems] = useState<any[]>([])
@@ -14,6 +24,13 @@ export default function Gallery() {
   const [description, setDescription] = useState('')
   const [descLoading, setDescLoading] = useState(false)
   const [isMobile, setIsMobile] = useState(false)
+  const itemsRef = useRef<any[]>([])
+  const loadingMoreRef = useRef(false)
+  const initialLoadDoneRef = useRef(false)
+
+  useEffect(() => {
+    itemsRef.current = items
+  }, [items])
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -24,31 +41,81 @@ export default function Gallery() {
 
   const { COLS, COL_WIDTH, GAP, PAD } = isMobile ? MOBILE : DESKTOP
 
+  const layoutBatch = useCallback(
+    async (artworks, initialColHeights) => {
+      const heights = [...initialColHeights]
+      const loaded = await Promise.all(
+        artworks.map(
+          (a: any) =>
+            new Promise(resolve => {
+              const img = new window.Image()
+              img.onload = () =>
+                resolve({ ...a, x: 0, y: 0, h: (COL_WIDTH / img.naturalWidth) * img.naturalHeight })
+              img.onerror = () => resolve({ ...a, x: 0, y: 0, h: COL_WIDTH })
+              img.src = a.imageUrl
+            })
+        )
+      )
+      const positioned = loaded.map(item => {
+        const col = heights.indexOf(Math.min(...heights))
+        const x = PAD + col * (COL_WIDTH + GAP)
+        const y = heights[col]
+        heights[col] += item.h + GAP
+        return { ...item, x, y }
+      })
+      return { positioned, gridHeight: Math.max(...heights) + PAD }
+    },
+    [COL_WIDTH, GAP, PAD]
+  )
+
   useEffect(() => {
     const iv = setInterval(() => setViewers(v => Math.max(4, Math.min(24, v + (Math.random() > 0.5 ? 1 : -1)))), 4000)
     return () => clearInterval(iv)
   }, [])
 
   useEffect(() => {
-    fetch('/api/random?count=20').then(r => r.json()).then(async (artworks) => {
-      const colHeights = Array(COLS).fill(PAD)
-      const loaded = await Promise.all(artworks.map((a: any) => new Promise(resolve => {
-        const img = new window.Image()
-        img.onload = () => resolve({ ...a, x: 0, y: 0, h: (COL_WIDTH / img.naturalWidth) * img.naturalHeight })
-        img.onerror = () => resolve({ ...a, x: 0, y: 0, h: COL_WIDTH })
-        img.src = a.imageUrl
-      })))
-      const positioned = loaded.map(item => {
-        const col = colHeights.indexOf(Math.min(...colHeights))
-        const x = PAD + col * (COL_WIDTH + GAP)
-        const y = colHeights[col]
-        colHeights[col] += item.h + GAP
-        return { ...item, x, y }
-      })
+    let cancelled = false
+    initialLoadDoneRef.current = false
+    ;(async () => {
+      const res = await fetch('/api/random?count=20')
+      const artworks = await res.json()
+      if (cancelled) return
+      const { positioned, gridHeight } = await layoutBatch(artworks, Array(COLS).fill(PAD))
+      if (cancelled) return
       setItems(positioned)
-      setGridHeight(Math.max(...colHeights) + PAD)
-    })
-  }, [COLS, COL_WIDTH, GAP, PAD])
+      setGridHeight(gridHeight)
+      initialLoadDoneRef.current = true
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [COLS, layoutBatch])
+
+  const loadMore = useCallback(async () => {
+    if (!initialLoadDoneRef.current || loadingMoreRef.current) return
+    loadingMoreRef.current = true
+    try {
+      const res = await fetch('/api/random?count=20')
+      const artworks = await res.json()
+      if (!artworks.length) return
+      const prev = itemsRef.current
+      const continueHeights = computeColHeightsFromItems(prev, COLS, COL_WIDTH, GAP, PAD)
+      const { positioned, gridHeight } = await layoutBatch(artworks, continueHeights)
+      setItems(cur => [...cur, ...positioned])
+      setGridHeight(gridHeight)
+    } finally {
+      loadingMoreRef.current = false
+    }
+  }, [COLS, COL_WIDTH, GAP, PAD, layoutBatch])
+
+  useEffect(() => {
+    const onScroll = () => {
+      const doc = document.documentElement
+      if (window.scrollY + window.innerHeight >= doc.scrollHeight - 400) loadMore()
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [loadMore])
 
   const openArtwork = async (artwork) => {
     setSelected(artwork)
@@ -127,7 +194,7 @@ export default function Gallery() {
         </div>
         <div style={{ position: 'relative', height: gridHeight }}>
           {items.map(item => (
-            <div key={item.id} onClick={() => openArtwork(item)} style={{ position: 'absolute', left: item.x, top: item.y, width: COL_WIDTH, overflow: 'hidden', cursor: 'pointer' }}>
+            <div key={`${item.id}-${item.x}-${item.y}`} onClick={() => openArtwork(item)} style={{ position: 'absolute', left: item.x, top: item.y, width: COL_WIDTH, overflow: 'hidden', cursor: 'pointer' }}>
               <img src={item.imageUrl} alt={item.title} style={{ width: '100%', height: 'auto', display: 'block' }} />
             </div>
           ))}
