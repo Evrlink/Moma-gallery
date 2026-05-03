@@ -8,7 +8,6 @@ const MOBILE  = { COLS: 2, COL_WIDTH: 160,   GAP: 12, PAD: 16 }
 
 export default function Gallery() {
   const [items, setItems] = useState<any[]>([])
-  const [colHeights, setColHeights] = useState<number[]>([])
   const [gridHeight, setGridHeight] = useState(0)
   const [viewers, setViewers] = useState(9)
   const [selected, setSelected] = useState<any>(null)
@@ -17,6 +16,40 @@ export default function Gallery() {
   const [isMobile, setIsMobile] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const loaderRef = useRef(null)
+  const colHeightsRef = useRef<number[]>([])
+  const loadingRef = useRef(false)
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
+
+  const { COLS, COL_WIDTH, GAP, PAD } = isMobile ? MOBILE : DESKTOP
+
+  useEffect(() =>
+cat > ~/moma-gallery/app/gallery.tsx << 'EOF'
+// @ts-nocheck
+'use client'
+import { useEffect, useState, useRef, useCallback } from 'react'
+import { ConnectWallet } from '@/components/ConnectWallet'
+
+const DESKTOP = { COLS: 5, COL_WIDTH: 269.8, GAP: 50, PAD: 50 }
+const MOBILE  = { COLS: 2, COL_WIDTH: 160,   GAP: 12, PAD: 16 }
+
+export default function Gallery() {
+  const [items, setItems] = useState<any[]>([])
+  const [gridHeight, setGridHeight] = useState(0)
+  const [viewers, setViewers] = useState(9)
+  const [selected, setSelected] = useState<any>(null)
+  const [description, setDescription] = useState('')
+  const [descLoading, setDescLoading] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
+  const loaderRef = useRef(null)
+  const colHeightsRef = useRef<number[]>([])
+  const loadingRef = useRef(false)
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768)
@@ -32,8 +65,9 @@ export default function Gallery() {
     return () => clearInterval(iv)
   }, [])
 
-  const appendArtworks = useCallback(async (currentHeights: number[]) => {
-    if (loadingMore) return
+  const positionArtworks = useCallback(async () => {
+    if (loadingRef.current) return
+    loadingRef.current = true
     setLoadingMore(true)
     const artworks = await fetch('/api/random?count=20').then(r => r.json())
     const loaded = await Promise.all(artworks.map((a: any) => new Promise(resolve => {
@@ -42,7 +76,7 @@ export default function Gallery() {
       img.onerror = () => resolve({ ...a, h: COL_WIDTH })
       img.src = a.imageUrl
     })))
-    const heights = [...currentHeights]
+    const heights = colHeightsRef.current
     const positioned = loaded.map(item => {
       const col = heights.indexOf(Math.min(...heights))
       const x = PAD + col * (COL_WIDTH + GAP)
@@ -50,46 +84,27 @@ export default function Gallery() {
       heights[col] += item.h + GAP
       return { ...item, x, y, uid: Math.random() }
     })
-    setColHeights(heights)
+    colHeightsRef.current = heights
     setGridHeight(Math.max(...heights) + PAD)
     setItems(prev => [...prev, ...positioned])
+    loadingRef.current = false
     setLoadingMore(false)
-  }, [COLS, COL_WIDTH, GAP, PAD, loadingMore])
+  }, [COLS, COL_WIDTH, GAP, PAD])
 
   useEffect(() => {
     setItems([])
-    const heights = Array(COLS).fill(PAD)
-    setColHeights(heights)
-    fetch('/api/random?count=20').then(r => r.json()).then(async (artworks) => {
-      const loaded = await Promise.all(artworks.map((a: any) => new Promise(resolve => {
-        const img = new window.Image()
-        img.onload = () => resolve({ ...a, h: (COL_WIDTH / img.naturalWidth) * img.naturalHeight })
-        img.onerror = () => resolve({ ...a, h: COL_WIDTH })
-        img.src = a.imageUrl
-      })))
-      const h = Array(COLS).fill(PAD)
-      const positioned = loaded.map(item => {
-        const col = h.indexOf(Math.min(...h))
-        const x = PAD + col * (COL_WIDTH + GAP)
-        const y = h[col]
-        h[col] += item.h + GAP
-        return { ...item, x, y, uid: Math.random() }
-      })
-      setColHeights(h)
-      setItems(positioned)
-      setGridHeight(Math.max(...h) + PAD)
-    })
+    colHeightsRef.current = Array(COLS).fill(PAD)
+    setGridHeight(0)
+    positionArtworks()
   }, [COLS, COL_WIDTH, GAP, PAD])
 
   useEffect(() => {
     const observer = new IntersectionObserver(entries => {
-      if (entries[0].isIntersecting && colHeights.length > 0) {
-        appendArtworks(colHeights)
-      }
+      if (entries[0].isIntersecting) positionArtworks()
     }, { threshold: 0.1 })
     if (loaderRef.current) observer.observe(loaderRef.current)
     return () => observer.disconnect()
-  }, [appendArtworks, colHeights])
+  }, [positionArtworks])
 
   const openArtwork = async (artwork) => {
     setSelected(artwork)
@@ -118,8 +133,8 @@ export default function Gallery() {
       <Nav />
       <button onClick={closeArtwork} style={{ position: 'fixed', top: '4.5rem', left: 20, zIndex: 100, background: 'none', border: 'none', fontSize: 20, cursor: 'pointer', color: '#555', padding: '4px 8px' }}>←</button>
       {isMobile ? (
-      <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingTop: '3.25rem', overflowY: 'auto' }}>
-          <div style={{ width: '100%', background: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 16px 16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', paddingTop: '3.25rem', overflowY: 'auto' }}>
+          <div style={{ wih: '100%', background: '#fff', display: 'flex', justifyContent: 'center', alignItems: 'center', padding: '40px 16px 16px' }}>
             <img src={selected.imageUrl} alt={selected.title} style={{ maxWidth: '100%', maxHeight: '60vw', objectFit: 'contain', display: 'block' }} />
           </div>
           <div style={{ padding: '16px 20px 40px' }}>
